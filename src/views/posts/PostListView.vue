@@ -6,71 +6,27 @@
       v-model:inputValue="params.title_like"
       v-model:selectValue="params._limit"
     />
-    <!-- <form @submit.prevent>
-      <div class="row g-3">
-        <div class="col">
-          <input v-model="params.title_like" type="text" class="form-control" />
-        </div>
-        <div class="col-3">
-          <select v-model="params._limit" class="form-select">
-            <option value="3">Watching 3</option>
-            <option value="6">Watching 6</option>
-            <option value="9">Watching 9</option>
-          </select>
-        </div>
-      </div>
-    </form> -->
+
     <hr class="my-4" />
-    <AppGrid :items="posts">
-      <template v-slot="{ item }">
-        <PostItem
-          :title="item.title"
-          :content="item.content"
-          :created-at="item.createdAt"
-          @click="goPageDetail(item.id)"
-          @modal="openModal(item)"
-        />
-      </template>
-    </AppGrid>
 
-    <!-- <nav class="mt-5" aria-label="Page navigation example">
-      <ul class="pagination justify-content-center">
-        <li class="page-item" :class="{ disabled: !(params._page > 1) }">
-          <a
-            class="page-link"
-            href="#"
-            aria-label="Previous"
-            @click.prevent="--params._page"
-          >
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-        <li
-          v-for="page in pageCount"
-          :key="page"
-          class="page-item"
-          :class="{ active: params._page === page }"
-        >
-          <a class="page-link" href="#" @click.prevent="params._page = page">
-            {{ page }}
-          </a>
-        </li>
+    <AppLoading v-if="isLoading" />
 
-        <li
-          class="page-item"
-          :class="{ disabled: !(params._page < pageCount) }"
-        >
-          <a
-            class="page-link"
-            href="#"
-            aria-label="Next"
-            @click.prevent="++params._page"
-          >
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      </ul>
-    </nav> -->
+    <AppError v-else-if="errorMessage" :message="errorMessage" />
+
+    <template v-else>
+      <AppGrid :items="posts">
+        <template v-slot="{ item }">
+          <PostItem
+            :title="item.title"
+            :content="item.content"
+            :created-at="item.createdAt"
+            @click="goPageDetail(item.id)"
+            @modal="openModal(item)"
+          />
+        </template>
+      </AppGrid>
+    </template>
+
     <AppPagination
       :current-page="params._page"
       :page-count="pageCount"
@@ -85,25 +41,6 @@
         :created-at="modalCreatedAt"
       />
     </Teleport>
-    <!-- <AppModal v-model="show" :title="posts.title">
-      <template #default>
-        <div class="row g-3">
-          <div class="col-3 text-muted">Title</div>
-          <div class="col-9">{{ modalTitle }}</div>
-
-          <div class="col-3 text-muted">Content</div>
-          <div class="col-9">{{ modalContent }}</div>
-
-          <div class="col-3 text-muted">CreatedAt</div>
-          <div class="col-9">{{ modalCreatedAt }}</div>
-        </div>
-      </template>
-      <template #actions>
-        <button type="button" class="btn btn-secondary" @click="closeModal">
-          Close
-        </button>
-      </template>
-    </AppModal> -->
 
     <template v-if="posts && posts.length > 0">
       <hr class="my-5" />
@@ -117,6 +54,7 @@
 <script setup>
 /* Vue */
 import { ref, watchEffect } from "vue";
+import { computed } from "@vue/reactivity";
 
 /* Route */
 import { useRouter } from "vue-router";
@@ -130,9 +68,12 @@ import PostModal from "../../components/posts/PostModal.vue";
 // import AppGrid from "../../components/app/AppGrid.vue";
 // import AppPagination from "../../components/app/AppPagination.vue";
 
-/* Utils */
+/* api */
 import { getPosts } from "../../api/posts.js";
-import { computed } from "@vue/reactivity";
+
+// appLoading, appError
+const errorMessage = ref(null);
+const isLoading = ref(false);
 
 // madal
 const show = ref(false);
@@ -165,6 +106,7 @@ const pageCount = computed(() =>
 
 const fetchPosts = async () => {
   try {
+    isLoading.value = true;
     const { data, headers } = await getPosts(params.value);
     posts.value = data;
     totalCount.value = headers["x-total-count"];
@@ -173,6 +115,9 @@ const fetchPosts = async () => {
     // ({ data: posts.value } = await getPosts(params.value));
   } catch (error) {
     console.error(error);
+    errorMessage.value = error;
+  } finally {
+    isLoading.value = false;
   }
 };
 // fetchPosts();

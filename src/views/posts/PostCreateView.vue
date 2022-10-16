@@ -2,6 +2,9 @@
   <div>
     <h2>게시글 등록</h2>
     <hr class="my-4" />
+
+    <AppError v-if="errorMessage" :message="errorMessage" />
+
     <PostForm
       v-model:title="savedList.title"
       v-model:content="savedList.content"
@@ -15,7 +18,18 @@
         >
           List
         </button>
-        <button class="btn btn-primary">Save</button>
+
+        <button class="btn btn-primary" :disabled="isLoading">
+          <template v-if="isLoading">
+            <span
+              class="spinner-grow spinner-grow-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span class="visually-hidden">Loading...</span>
+          </template>
+          <template v-else> Save </template>
+        </button>
       </template>
     </PostForm>
   </div>
@@ -36,6 +50,10 @@ import PostForm from "../../components/posts/PostForm.vue";
 
 /* composables */
 import { useAlert } from "../../composables/alert";
+
+// appLoading, appError
+const errorMessage = ref(null);
+const isLoading = ref(false);
 
 const { vAlert, vSuccess } = useAlert();
 
@@ -60,17 +78,21 @@ const goListPage = () => {
 
 const saveData = async () => {
   try {
+    isLoading.value = true;
     const data = {
       ...savedList.value,
       // createdAt: `${years}년 ${months}월 ${dates}일 ${hours}시 ${minutes}분 ${secondes}초`,
       createdAt: Date.now(),
     };
-    createPost(data);
+    await createPost(data);
     vSuccess("등록이 완료되었습니다.");
     goListPage();
   } catch (error) {
     console.error(error);
     vAlert(error.message);
+    errorMessage.value = error;
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>
