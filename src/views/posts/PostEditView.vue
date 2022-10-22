@@ -52,7 +52,7 @@ import { getPostsById, updatePost } from "../../api/posts";
 import PostForm from "../../components/posts/PostForm.vue";
 
 /* composables */
-import { useAlert } from "../../composables/alert";
+import { useAlert } from "../../composables/useAlert";
 
 /* alert Transition */
 // const showAlert = ref(false);

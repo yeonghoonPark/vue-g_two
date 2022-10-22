@@ -70,10 +70,11 @@ import PostModal from "../../components/posts/PostModal.vue";
 
 /* api */
 import { getPosts } from "../../api/posts.js";
+import { useAxios } from "../../composables/useAxios";
 
 // appLoading, appError
-const errorMessage = ref(null);
-const isLoading = ref(false);
+// const errorMessage = ref(null);
+// const isLoading = ref(false);
 
 // madal
 const show = ref(false);
@@ -89,7 +90,7 @@ const openModal = ({ title, content, createdAt }) => {
 
 // main
 const router = useRouter();
-const posts = ref([]);
+// const posts = ref([]);
 const params = ref({
   _sort: "createdAt",
   _order: "desc",
@@ -99,31 +100,38 @@ const params = ref({
 });
 
 // pagination
-const totalCount = ref(0);
+const totalCount = computed(() => response.value.headers["x-total-count"]);
 const pageCount = computed(() =>
   Math.ceil(totalCount.value / params.value._limit),
 );
 
-const fetchPosts = async () => {
-  try {
-    isLoading.value = true;
-    const { data, headers } = await getPosts(params.value);
-    posts.value = data;
-    totalCount.value = headers["x-total-count"];
+const {
+  response,
+  data: posts,
+  errorMessage,
+  isLoading,
+} = useAxios("/posts", { params });
 
-    // 위를 아래처럼 축약할 수 있다.
-    // ({ data: posts.value } = await getPosts(params.value));
-  } catch (error) {
-    console.error(error);
-    errorMessage.value = error;
-  } finally {
-    isLoading.value = false;
-  }
-};
+// const fetchPosts = async () => {
+//   try {
+//     isLoading.value = true;
+//     const { data, headers } = await getPosts(params.value);
+//     posts.value = data;
+//     totalCount.value = headers["x-total-count"];
+
+//     // 위를 아래처럼 축약할 수 있다.
+//     // ({ data: posts.value } = await getPosts(params.value));
+//   } catch (error) {
+//     console.error(error);
+//     errorMessage.value = error;
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
 // fetchPosts();
 
 // watchEffect는 watch와 다르게 자동으로 한 번 실행한다. (react의 useEffect와 흡사하다.)
-watchEffect(fetchPosts);
+// watchEffect(fetchPosts);
 
 /**
  *

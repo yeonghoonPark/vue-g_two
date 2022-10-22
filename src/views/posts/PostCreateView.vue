@@ -49,7 +49,7 @@ import { createPost } from "../../api/posts";
 import PostForm from "../../components/posts/PostForm.vue";
 
 /* composables */
-import { useAlert } from "../../composables/alert";
+import { useAlert } from "../../composables/useAlert";
 
 // appLoading, appError
 const errorMessage = ref(null);
