@@ -100,7 +100,7 @@ const params = ref({
 });
 
 // pagination
-const totalCount = computed(() => response.value.headers["x-total-count"]);
+const totalCount = computed(() => response.value?.headers["x-total-count"]);
 const pageCount = computed(() =>
   Math.ceil(totalCount.value / params.value._limit),
 );

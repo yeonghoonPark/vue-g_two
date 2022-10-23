@@ -53,6 +53,7 @@ import PostForm from "../../components/posts/PostForm.vue";
 
 /* composables */
 import { useAlert } from "../../composables/useAlert";
+import { useAxios } from "../../composables/useAxios";
 
 /* alert Transition */
 // const showAlert = ref(false);
@@ -68,8 +69,8 @@ import { useAlert } from "../../composables/useAlert";
 // };
 
 // appLoading, appError
-const errorMessage = ref(null);
-const isLoading = ref(false);
+// const errorMessage = ref(null);
+// const isLoading = ref(false);
 
 const { vAlert, vSuccess } = useAlert();
 
@@ -81,31 +82,37 @@ const props = defineProps({
   },
 });
 
-const selectedPostById = ref({
-  title: null,
-  content: null,
-});
+// const selectedPostById = ref({
+//   title: null,
+//   content: null,
+// });
 
 const setPostById = ({ title, content }) => {
   selectedPostById.value.title = title;
   selectedPostById.value.content = content;
 };
 
-const printPostsById = async () => {
-  try {
-    isLoading.value = true;
-    const { data } = await getPostsById(props.id);
-    setPostById(data);
-    // ({ data: selectedPost.value } = await getPostsById(props.id));
-  } catch (error) {
-    console.error(error);
-    vAlert("Network Error");
-    errorMessage.value = error;
-  } finally {
-    isLoading.value = false;
-  }
-};
-printPostsById();
+const {
+  errorMessage,
+  isLoading,
+  data: selectedPostById,
+} = useAxios(`/posts/${props.id}`);
+
+// const printPostsById = async () => {
+//   try {
+//     isLoading.value = true;
+//     const { data } = await getPostsById(props.id);
+//     setPostById(data);
+//     // ({ data: selectedPost.value } = await getPostsById(props.id));
+//   } catch (error) {
+//     console.error(error);
+//     vAlert("Network Error");
+//     errorMessage.value = error;
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
+// printPostsById();
 
 // editAppLoading, editAppError
 const editErrorMessage = ref(null);

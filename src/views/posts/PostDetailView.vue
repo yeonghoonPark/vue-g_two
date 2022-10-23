@@ -59,10 +59,11 @@ import { useRoute, useRouter } from "vue-router";
 
 /* api */
 import { getPostsById, deletePost } from "../../api/posts";
+import { useAxios } from "../../composables/useAxios";
 
 // appLoading, appError
-const errorMessage = ref(null);
-const isLoading = ref(false);
+// const errorMessage = ref(null);
+// const isLoading = ref(false);
 
 const props = defineProps({
   id: [Number, String],
@@ -71,11 +72,11 @@ const props = defineProps({
 const router = useRouter();
 // const route = useRoute();
 // const id = route.params.id;
-const selectedPost = ref({
-  title: null,
-  content: null,
-  createdAt: null,
-});
+// const selectedPost = ref({
+//   title: null,
+//   content: null,
+//   createdAt: null,
+// });
 
 const setPost = ({ title, content, createdAt }) => {
   selectedPost.value.title = title;
@@ -83,20 +84,26 @@ const setPost = ({ title, content, createdAt }) => {
   selectedPost.value.createdAt = createdAt;
 };
 
-const findPost = async () => {
-  try {
-    isLoading.value = true;
-    const { data } = await getPostsById(props.id);
-    setPost(data);
-    // ({ data: selectedPost.value } = await getPostsById(props.id));
-  } catch (error) {
-    console.error(error);
-    errorMessage.value = error;
-  } finally {
-    isLoading.value = false;
-  }
-};
-findPost();
+const {
+  errorMessage,
+  isLoading,
+  data: selectedPost,
+} = useAxios(`/posts/${props.id}`);
+
+// const findPost = async () => {
+//   try {
+//     isLoading.value = true;
+//     const { data } = await getPostsById(props.id);
+//     setPost(data);
+//     // ({ data: selectedPost.value } = await getPostsById(props.id));
+//   } catch (error) {
+//     console.error(error);
+//     errorMessage.value = error;
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
+// findPost();
 
 // deleteAppLoading, deleteAppError
 const deleteErrorMessage = ref(null);

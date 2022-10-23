@@ -8,15 +8,21 @@ const defaultConfig = {
   method: "get",
 };
 
-export const useAxios = (url, config = {}) => {
+const defaultOptions = {
+  immediate: true,
+};
+
+export const useAxios = (url, config = {}, options = {}) => {
   const response = ref(null);
   const data = ref(null);
   const errorMessage = ref(null);
   const isLoading = ref(false);
 
+  const { onSuccess, onError, immediate } = { ...defaultOptions, ...options };
+
   const { params } = config;
 
-  const execute = () => {
+  const execute = (body) => {
     data.value = null;
     errorMessage.value = null;
     isLoading.value = true;
@@ -24,13 +30,16 @@ export const useAxios = (url, config = {}) => {
       ...defaultConfig,
       ...config,
       params: unref(params),
+      data: typeof body === "object" ? body : {},
     })
       .then((res) => {
         response.value = res;
         data.value = res.data;
+        if (onSuccess) onSuccess(res);
       })
       .catch((error) => {
         errorMessage.value = error;
+        if (onError) onError(error);
       })
       .finally(() => {
         isLoading.value = false;
@@ -40,7 +49,7 @@ export const useAxios = (url, config = {}) => {
   if (isRef(params)) {
     watchEffect(execute);
   } else {
-    execute();
+    if (immediate) execute();
   }
 
   return {
@@ -48,5 +57,6 @@ export const useAxios = (url, config = {}) => {
     data,
     errorMessage,
     isLoading,
+    execute,
   };
 };

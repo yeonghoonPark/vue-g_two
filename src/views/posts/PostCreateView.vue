@@ -50,10 +50,11 @@ import PostForm from "../../components/posts/PostForm.vue";
 
 /* composables */
 import { useAlert } from "../../composables/useAlert";
+import { useAxios } from "../../composables/useAxios";
 
 // appLoading, appError
-const errorMessage = ref(null);
-const isLoading = ref(false);
+// const errorMessage = ref(null);
+// const isLoading = ref(false);
 
 const { vAlert, vSuccess } = useAlert();
 
@@ -76,25 +77,46 @@ const goListPage = () => {
 // const minutes = date.getMinutes();
 // const secondes = date.getSeconds();
 
+const { errorMessage, isLoading, execute } = useAxios(
+  "/posts",
+  {
+    method: "post",
+  },
+  {
+    immediate: false,
+    onSuccess: () => {
+      goListPage();
+      vSuccess("등록이 완료되었습니다.");
+    },
+    onError: (error) => {
+      vAlert(error.message);
+    },
+  },
+);
+
 const saveData = async () => {
-  try {
-    isLoading.value = true;
-    const data = {
-      ...savedList.value,
-      // createdAt: `${years}년 ${months}월 ${dates}일 ${hours}시 ${minutes}분 ${secondes}초`,
-      createdAt: Date.now(),
-    };
-    await createPost(data);
-    vSuccess("등록이 완료되었습니다.");
-    goListPage();
-  } catch (error) {
-    console.error(error);
-    vAlert(error.message);
-    errorMessage.value = error;
-  } finally {
-    isLoading.value = false;
-  }
+  execute({ ...savedList.value, createdAt: Date.now() });
 };
+
+// const saveData = async () => {
+//   try {
+//     isLoading.value = true;
+//     const data = {
+//       ...savedList.value,
+//       // createdAt: `${years}년 ${months}월 ${dates}일 ${hours}시 ${minutes}분 ${secondes}초`,
+//       createdAt: Date.now(),
+//     };
+//     await createPost(data);
+//     vSuccess("등록이 완료되었습니다.");
+//     goListPage();
+//   } catch (error) {
+//     console.error(error);
+//     vAlert(error.message);
+//     errorMessage.value = error;
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
 </script>
 
 <style lang="scss" scoped></style>
