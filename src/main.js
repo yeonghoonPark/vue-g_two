@@ -15,12 +15,16 @@ import { globalDirectives } from "./plugins/globalDirectives";
 
 import dayjs from "./plugins/dayJs";
 
+// pinia
+import { createPinia } from "pinia";
+
 const app = createApp(App);
 app.use(functionPluginsEx);
 app.use(objectPluginsEx, { name: "Jasper" });
 app.use(objectPerson, { name: "Tom Cruise" });
 app.use(globalComponents);
 app.use(globalDirectives);
+app.use(createPinia());
 app.use(dayjs);
 app.use(router);
 
