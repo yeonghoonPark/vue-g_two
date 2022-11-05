@@ -5,6 +5,7 @@
 
   <div v-else>
     <h2>{{ selectedPost.title }}</h2>
+    <h2>id: {{ props.id }} isOdd: {{ isOdd }}</h2>
     <p>{{ selectedPost.content }}</p>
     <p class="text-muted">
       {{
@@ -52,15 +53,20 @@
 
 <script setup>
 /* vue */
-import { ref } from "vue";
+import { computed, ref, toRef, toRefs } from "vue";
 
 /* router */
 import { useRoute, useRouter } from "vue-router";
 
 /* api */
 import { getPostsById, deletePost } from "../../api/posts";
-import { useAxios } from "../../composables/useAxios";
 
+/* composables */
+import { useAlert } from "../../composables/useAlert";
+import { useAxios } from "../../composables/useAxios";
+import { useNumber } from "../../composables/useNumber";
+
+const { vAlert, vSuccess } = useAlert();
 // appLoading, appError
 // const errorMessage = ref(null);
 // const isLoading = ref(false);
@@ -68,6 +74,14 @@ import { useAxios } from "../../composables/useAxios";
 const props = defineProps({
   id: [Number, String],
 });
+
+// toRefs 구조분해할당 방식
+// const { id: idRef } = toRefs(props);
+// toRef 방식
+const idRef = toRef(props, "id");
+// 반응성을 잃지 않기 위해서 props.id 가 아닌 props.id를 toRef를 사용하여 넘겨준다.
+// 받는 composable함수 에서는 parameter로 받는 값에 unref로 감싸주어야 한다.
+const { isOdd } = useNumber(idRef);
 
 const router = useRouter();
 // const route = useRoute();
@@ -84,11 +98,9 @@ const setPost = ({ title, content, createdAt }) => {
   selectedPost.value.createdAt = createdAt;
 };
 
-const {
-  errorMessage,
-  isLoading,
-  data: selectedPost,
-} = useAxios(`/posts/${props.id}`);
+const url = computed(() => `/posts/${props.id}`);
+
+const { errorMessage, isLoading, data: selectedPost } = useAxios(url);
 
 // const findPost = async () => {
 //   try {
@@ -105,24 +117,52 @@ const {
 // };
 // findPost();
 
+const {
+  deleteErrorMessage: deleteErrorMessage,
+  deleteIsLoading: deleteIsLoading,
+  execute,
+} = useAxios(
+  `/posts/${props.id}`,
+  {
+    method: "delete",
+  },
+  {
+    immediate: false,
+    onSuccess: () => {
+      vSuccess("삭제가 완료되었습니다.");
+      goListPage();
+    },
+    onError: (error) => {
+      vAlert("Network Error", error);
+    },
+  },
+);
+
 // deleteAppLoading, deleteAppError
-const deleteErrorMessage = ref(null);
-const deleteIsLoading = ref(false);
+// const deleteErrorMessage = ref(null);
+// const deleteIsLoading = ref(false);
 const deletePostById = async () => {
-  try {
-    if (confirm("Are you sure you want to delete it?") === false) {
-      return;
-    }
-    deleteIsLoading.value = true;
-    await deletePost(props.id);
-    goListPage();
-  } catch (error) {
-    console.error(error);
-    deleteErrorMessage.value = error;
-  } finally {
-    deleteIsLoading.value = false;
+  if (confirm("Are you sure you want to delete it?") === false) {
+    return;
   }
+  execute();
 };
+
+// const deletePostById = async () => {
+//   try {
+//     if (confirm("Are you sure you want to delete it?") === false) {
+//       return;
+//     }
+//     deleteIsLoading.value = true;
+//     await deletePost(props.id);
+//     goListPage();
+//   } catch (error) {
+//     console.error(error);
+//     deleteErrorMessage.value = error;
+//   } finally {
+//     deleteIsLoading.value = false;
+//   }
+// };
 
 const goListPage = () => router.push({ name: "PostList" });
 const goEditPage = () =>
