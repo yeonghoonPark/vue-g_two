@@ -98,6 +98,26 @@ const {
   data: selectedPostById,
 } = useAxios(`/posts/${props.id}`);
 
+const {
+  errorMessage: editErrorMessage,
+  isLoading: editIsLoading,
+  execute,
+} = useAxios(
+  `/posts/${props.id}`,
+  { method: "patch" },
+  {
+    immediate: false,
+    onSuccess: () => {
+      vSuccess("Modification is complete");
+      goDetailPage();
+    },
+    onError: (error) => {
+      console.error(error);
+      vAlert("Network Error");
+    },
+  },
+);
+
 // const printPostsById = async () => {
 //   try {
 //     isLoading.value = true;
@@ -115,22 +135,26 @@ const {
 // printPostsById();
 
 // editAppLoading, editAppError
-const editErrorMessage = ref(null);
-const editIsLoading = ref(false);
+// const editErrorMessage = ref(null);
+// const editIsLoading = ref(false);
 const editPostsById = async () => {
-  try {
-    editIsLoading.value = true;
-    await updatePost(props.id, { ...selectedPostById.value });
-    vSuccess("Modification is complete");
-    goDetailPage();
-  } catch (error) {
-    console.error(error);
-    vAlert("Network Error");
-    editErrorMessage.value = error;
-  } finally {
-    editIsLoading.value = false;
-  }
+  execute({ ...selectedPostById.value });
 };
+
+// const editPostsById = async () => {
+//   try {
+//     editIsLoading.value = true;
+//     await updatePost(props.id, { ...selectedPostById.value });
+//     vSuccess("Modification is complete");
+//     goDetailPage();
+//   } catch (error) {
+//     console.error(error);
+//     vAlert("Network Error");
+//     editErrorMessage.value = error;
+//   } finally {
+//     editIsLoading.value = false;
+//   }
+// };
 
 const goDetailPage = () =>
   router.push({ name: "PostDetail", params: { id: props.id } });
