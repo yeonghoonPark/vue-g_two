@@ -8,7 +8,7 @@
   <div class="app-alert">
     <TransitionGroup name="slide">
       <div
-        v-for="({ message, type }, index) in items"
+        v-for="({ message, type }, index) in alerts"
         :key="index"
         class="alert"
         :class="typeStyle(type)"
@@ -22,13 +22,16 @@
 
 <script setup>
 import { computed } from "@vue/reactivity";
+import { useAlert } from "../../composables/useAlert";
 
 // TranstionGroup
-const props = defineProps({
-  items: {
-    type: Array,
-  },
-});
+// const props = defineProps({
+//   items: {
+//     type: Array,
+//   },
+// });
+
+const { alerts } = useAlert();
 
 const typeStyle = (type) =>
   type === "error" ? "alert-danger" : "alert-success";
