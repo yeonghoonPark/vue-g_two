@@ -22,6 +22,7 @@
             :created-at="item.createdAt"
             @click="goPageDetail(item.id)"
             @modal="openModal(item)"
+            @preview="selectPreview(item.id)"
           />
         </template>
       </AppGrid>
@@ -41,6 +42,13 @@
         :created-at="modalCreatedAt"
       />
     </Teleport>
+
+    <template v-if="previewId">
+      <hr class="my-5" />
+      <AppCard>
+        <PostDetailView :id="previewId" />
+      </AppCard>
+    </template>
 
     <template v-if="posts && posts.length > 0">
       <hr class="my-5" />
@@ -76,6 +84,9 @@ import { useAxios } from "../../composables/useAxios";
 // const errorMessage = ref(null);
 // const isLoading = ref(false);
 
+const previewId = ref(null);
+const selectPreview = (id) => (previewId.value = id);
+
 // madal
 const show = ref(false);
 const modalTitle = ref("");
@@ -100,7 +111,7 @@ const params = ref({
 });
 
 // pagination
-const totalCount = computed(() => response.value?.headers["x-total-count"]);
+const totalCount = computed(() => response.value.headers["x-total-count"]);
 const pageCount = computed(() =>
   Math.ceil(totalCount.value / params.value._limit),
 );
